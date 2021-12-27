@@ -9,9 +9,9 @@ import {
 } from "forta-agent";
 import {
   DECIMALS,
-  DEC_ALERT_1,
-  DEC_ALERT_2,
-  INC_ALERT_1,
+  //DEC_ALERT_1,
+  //DEC_ALERT_2,
+  //INC_ALERT_1,
   SUSPICIUS_LEVEL_1,
   SUSPICIUS_LEVEL_2,
   SUSPICIUS_LEVEL_3,
@@ -20,6 +20,9 @@ import {
   SUSPICIUS_THRESHOLD_2,
   VOTE_CAST_SIG,
 } from "./const";
+export const INC_ALERT_1 = "UNI-INC-1";
+export const DEC_ALERT_1 = "UNI-DEC-1";
+export const DEC_ALERT_2 = "UNI-DEC-2";
 
 export class VoterTrack {
   address!: string;
@@ -33,7 +36,7 @@ export const analyzeBalanceChange = (
   priorBalance: number
 ): number => {
   const balanceChange = currentBalance - priorBalance;
-  if (balanceChange) return 0;
+  if (balanceChange === 0) return 0;
 
   let suspicius: number = 0;
   if (balanceChange >= SUSPICIUS_LEVEL_4) suspicius = 4;
@@ -57,9 +60,12 @@ export class Alerts {
     curretBalance: number,
     priorBalance: number
   ) {
+    console.log("Generating alert!");
+    console.log(INC_ALERT_1);
+    console.log(curretBalance - priorBalance);
     return Finding.fromObject({
       name: "Voter Balance Increase",
-      description: `Voter Balance increased by ${
+      description: `Voter balance increased by ${
         (curretBalance - priorBalance) / DECIMALS
       }`,
       alertId: INC_ALERT_1,
@@ -75,8 +81,7 @@ export class Alerts {
 
   public blockSuspiciusBalanceDecreased(
     voter: VoterTrack,
-    currentVote: BigNumber,
-    metadata: { [key: string]: any }
+    currentVote: BigNumber
   ) {
     return Finding.fromObject({
       name: "Suspicius Account Balance Decrease",
@@ -86,15 +91,15 @@ export class Alerts {
       alertId: DEC_ALERT_2,
       severity: (voter.suspicius + 1) % 5,
       type: FindingType.Suspicious,
-      metadata: metadata,
+      metadata: {
+        voterAddress: voter.address,
+        curretBalance: currentVote.toString(),
+        priorBalance: voter.votes.toString(),
+      },
     });
   }
 
-  public blockBalanceDecreased(
-    voter: VoterTrack,
-    currentVote: BigNumber,
-    metadata: { [key: string]: any }
-  ) {
+  public blockBalanceDecreased(voter: VoterTrack, currentVote: BigNumber) {
     return Finding.fromObject({
       name: "Account Balance Decrease",
       description: `Account balance decreased ${voter.votes.minus(
@@ -103,7 +108,11 @@ export class Alerts {
       alertId: DEC_ALERT_1,
       severity: FindingSeverity.Medium,
       type: FindingType.Suspicious,
-      metadata: metadata,
+      metadata: {
+        voterAddress: voter.address,
+        curretBalance: currentVote.toString(),
+        priorBalance: voter.votes.toString(),
+      },
     });
   }
 }
@@ -155,6 +164,7 @@ export class TestUtils {
   }
 
   public createVoteTx(
+    address: string,
     blockNum: number,
     mockUni: any,
     priorVotes: number,
@@ -162,7 +172,8 @@ export class TestUtils {
   ) {
     mockUni.getPriorVotes = () => priorVotes;
     let args: Array<any> & { [key: string]: any } = [];
-    args["voter"] = currentVotes;
+    args["voter"] = address;
+    args["votes"] = currentVotes;
     const mockTx = this.createEventWithLogs(blockNum, [VOTE_CAST_SIG], [args]);
     return mockTx;
   }
