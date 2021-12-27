@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js";
+import { BigNumber } from "ethers";
 import {
   createTransactionEvent,
   TransactionEvent,
@@ -37,7 +37,7 @@ export const analyzeBalanceChange = (
   currentBalance: BigNumber,
   priorBalance: BigNumber
 ): number => {
-  const balanceChange = currentBalance.minus(priorBalance);
+  const balanceChange = currentBalance.sub(priorBalance);
   if (balanceChange.eq(0)) return 0;
 
   let suspicius: number = 0;
@@ -47,14 +47,12 @@ export const analyzeBalanceChange = (
   else if (balanceChange.gte(SUSPICIUS_LEVEL_1)) suspicius = 1;
 
   if (
-    currentBalance <=
-    priorBalance.plus(priorBalance.multipliedBy(SUSPICIUS_THRESHOLD_1))
+    currentBalance <= priorBalance.add(priorBalance.mul(SUSPICIUS_THRESHOLD_1))
   )
     suspicius--;
 
   if (
-    currentBalance >=
-    priorBalance.plus(priorBalance.multipliedBy(SUSPICIUS_THRESHOLD_2))
+    currentBalance >= priorBalance.add(priorBalance.mul(SUSPICIUS_THRESHOLD_2))
   )
     suspicius++;
 
@@ -70,11 +68,11 @@ export class Alerts {
   ) {
     console.log("Generating alert!");
     console.log(INC_ALERT_1);
-    console.log(curretBalance.minus(priorBalance));
+    console.log(curretBalance.sub(priorBalance));
     return Finding.fromObject({
       name: "Voter Balance Increase",
       description: `Voter balance increased by ${curretBalance
-        .minus(priorBalance)
+        .sub(priorBalance)
         .div(DECIMALS)}`,
       alertId: INC_ALERT_1,
       severity: severity,
@@ -93,7 +91,7 @@ export class Alerts {
   ) {
     return Finding.fromObject({
       name: "Suspicius Account Balance Decrease",
-      description: `Suspicius account balance decreased ${voter.votes.minus(
+      description: `Suspicius account balance decreased ${voter.votes.sub(
         currentVote
       )}`,
       alertId: DEC_ALERT_2,
@@ -110,9 +108,7 @@ export class Alerts {
   public blockBalanceDecreased(voter: VoterTrack, currentVote: BigNumber) {
     return Finding.fromObject({
       name: "Account Balance Decrease",
-      description: `Account balance decreased ${voter.votes.minus(
-        currentVote
-      )}`,
+      description: `Account balance decreased ${voter.votes.sub(currentVote)}`,
       alertId: DEC_ALERT_1,
       severity: FindingSeverity.Medium,
       type: FindingType.Suspicious,

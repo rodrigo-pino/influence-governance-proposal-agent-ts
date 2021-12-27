@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js";
+import { BigNumber } from "ethers";
 import { BlockEvent, ethers, Finding } from "forta-agent";
 import { Alerts, VoterTrack } from "./utils";
 
@@ -7,13 +7,13 @@ export const trackOldVotes = async (
   uni: ethers.Contract,
   previousVoters: Array<VoterTrack>
 ) => {
-  console.log("Hangling block");
+  console.log("Handling block");
   const findings: Finding[] = [];
 
   // Delete all voters which voted 100 or more blocks ago
   while (
     previousVoters.length > 0 &&
-    blockEvent.blockNumber - previousVoters[0].blockNum < 100
+    blockEvent.blockNumber - previousVoters[0].blockNum > 100
   ) {
     previousVoters.shift();
   }
@@ -23,9 +23,11 @@ export const trackOldVotes = async (
     uni.getPriorVotes(voter.address)
   );
 
+  console.log(previousVoters);
   const alerts = new Alerts();
   const deleteIndices: Array<number> = [];
   for (let i = 0; i < previousVoters.length; i++) {
+    console.log("Analizing", i);
     const voter = previousVoters[i];
     const currentVote: BigNumber = await currentBalance[i];
 
@@ -40,13 +42,9 @@ export const trackOldVotes = async (
         priorBalance: voter.votes.toString(),
       };
       if (voter.suspicius > 0) {
-        finding = alerts.blockSuspiciusBalanceDecreased(
-          voter,
-          currentVote,
-          metadata
-        );
+        finding = alerts.blockSuspiciusBalanceDecreased(voter, currentVote);
       } else {
-        finding = alerts.blockBalanceDecreased(voter, currentVote, metadata);
+        finding = alerts.blockBalanceDecreased(voter, currentVote);
       }
       // Add voter to stop tracking
       deleteIndices.push(i);
