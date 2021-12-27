@@ -97,12 +97,8 @@ export class TestUtils {
   ) {
     mockUni.getPriorVotes = () => priorVotes;
     let args: Array<any> & { [key: string]: any } = [];
-    args["voter"] = 100;
-    const mockTx = this.createEventWithLogs(
-      currentVotes,
-      [VOTE_CAST_SIG],
-      [args]
-    );
+    args["voter"] = currentVotes;
+    const mockTx = this.createEventWithLogs(blockNum, [VOTE_CAST_SIG], [args]);
     return mockTx;
   }
 }
