@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 import {
   BlockEvent,
   ethers,
@@ -31,28 +32,39 @@ export const trackOldVotes = async (
   const deleteIndices: Array<number> = [];
   for (let i = 0; i < previousVoters.length; i++) {
     const voter = previousVoters[i];
-    const currentVote = await currentBalance[i];
+    const currentVote: BigNumber = await currentBalance[i];
 
     // If balance decreased
-    if (currentVote < voter.votes) {
+    if (currentVote.lt(voter.votes)) {
       let finding: Finding;
       // Throw a different alert if balance decreased
       // from an already suspicius account
-      if (voter.suspicius) {
+      const metadata = {
+        voterAddress: voter.address,
+        currentBalance: currentVote.toString(),
+        priorBalance: voter.votes.toString(),
+      };
+      if (voter.suspicius > 0) {
         finding = Finding.fromObject({
-          name: "Account balance decrease",
-          description: "Account balance decreased",
+          name: "Suspicius Account Balance Decrease",
+          description: `Suspicius account balance decreased ${voter.votes.minus(
+            currentVote
+          )}`,
           alertId: "UNI-DEC-2",
-          severity: FindingSeverity.High,
+          severity: (voter.suspicius + 1) % 5,
           type: FindingType.Suspicious,
+          metadata: metadata,
         });
       } else {
         finding = Finding.fromObject({
           name: "Account balance decrease",
-          description: "Account balance decreased",
+          description: `Account balance decreased ${voter.votes.minus(
+            currentVote
+          )}`,
           alertId: "UNI-DEC-1",
           severity: FindingSeverity.Medium,
           type: FindingType.Suspicious,
+          metadata: metadata,
         });
       }
       // Add voter to stop tracking
