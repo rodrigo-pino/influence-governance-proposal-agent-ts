@@ -1,4 +1,4 @@
-import { HandleTransaction, HandleBlock } from "forta-agent";
+import { HandleTransaction } from "forta-agent";
 import {
   Alerts,
   analyzeBalanceChange,
