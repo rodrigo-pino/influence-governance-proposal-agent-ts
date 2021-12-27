@@ -6,7 +6,7 @@ import {
   TransactionEvent,
 } from "forta-agent";
 import { DECIMALS, GOVERNOR_BRAVO_ADDRESS, VOTE_CAST_SIG } from "./const";
-import { VoterTrack } from "./utils";
+import { analyzeBalanceChange, VoterTrack } from "./utils";
 
 export const verifyNewVotes = async (
   transactionEvent: TransactionEvent,
@@ -34,14 +34,16 @@ export const verifyNewVotes = async (
     console.log(`votes: ${voterVotes / DECIMALS}`);
     // If vote has a significant balance increase send alert
     // and set it as suspicius for later tracking
-    const balanceChange = voterVotes - priorVotes;
-    if (balanceChange >= 1 * DECIMALS) {
+    const severity = analyzeBalanceChange(voterVotes, priorVotes);
+    if (severity > 0) {
       findings.push(
         Finding.fromObject({
           name: "Voter Balance Increase",
-          description: `Voter Balance increased by ${balanceChange / DECIMALS}`,
+          description: `Voter Balance increased by ${
+            (voterVotes - priorVotes) / DECIMALS
+          }`,
           alertId: "UNI-INC-1",
-          severity: FindingSeverity.Medium,
+          severity: severity,
           type: FindingType.Suspicious,
           metadata: {
             voterAddress: voterAddress,
