@@ -12,7 +12,7 @@ import { verifyNewVotes } from "./verify.new.votes";
 import { VoterTrack } from "./utils";
 
 const uni = new ethers.Contract(UNI_ADDRESS, UNI_ABI, getEthersProvider());
-const previousVoters: Array<VoterTrack> = new Array();
+const prevVoters: Array<VoterTrack> = new Array();
 
 function provideHandleTransaction(
   uniContract: ethers.Contract,
@@ -33,6 +33,6 @@ function provideHandleBlock(
 export default {
   provideHandleTransaction,
   provideHandleBlock,
-  HandleTransaction: provideHandleTransaction(uni, previousVoters),
-  HandleBlock: provideHandleBlock(uni, previousVoters),
+  handleTransaction: provideHandleTransaction(uni, prevVoters),
+  handleBlock: provideHandleBlock(uni, prevVoters),
 };
