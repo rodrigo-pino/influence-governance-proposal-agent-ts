@@ -44,7 +44,7 @@ export const verifyNewVotes = async (
           }`,
           alertId: "UNI-INC-1",
           severity: severity,
-          type: FindingType.Suspicious,
+          type: severity === 1 ? FindingType.Info : FindingType.Suspicious,
           metadata: {
             voterAddress: voterAddress,
             currentBalance: voterVotes,
@@ -53,14 +53,13 @@ export const verifyNewVotes = async (
         })
       );
     }
-
     // Save all detected votes and keep checking them
     // for the next 100 blocks
     previousVoters.push({
       address: voterAddress,
       votes: voterVotes,
       blockNum: blockNum,
-      suspicius: balanceChange > 0,
+      suspicius: severity,
     });
   }
 

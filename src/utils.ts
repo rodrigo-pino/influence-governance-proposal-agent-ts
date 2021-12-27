@@ -12,7 +12,7 @@ export class VoterTrack {
   address!: string;
   votes!: BigNumber;
   blockNum!: number;
-  suspicius: boolean = false;
+  suspicius: number = 0;
 }
 
 export const analyzeBalanceChange = (
