@@ -11,8 +11,7 @@ import { trackOldVotes } from "./track.old.votes";
 import { verifyNewVotes } from "./verify.new.votes";
 import { VoterTrack } from "./utils";
 
-const provider = getEthersProvider();
-const uni = new ethers.Contract(UNI_ADDRESS, UNI_ABI, provider);
+const uni = new ethers.Contract(UNI_ADDRESS, UNI_ABI, getEthersProvider());
 const previousVoters: Array<VoterTrack> = new Array();
 
 const handleTransaction: HandleTransaction = async (
