@@ -14,12 +14,18 @@ import { VoterTrack } from "./utils";
 const uni = new ethers.Contract(UNI_ADDRESS, UNI_ABI, getEthersProvider());
 const previousVoters: Array<VoterTrack> = new Array();
 
-function provideHandleTransaction(uniContract: ethers.Contract) {
+function provideHandleTransaction(
+  uniContract: ethers.Contract,
+  previousVoters: Array<VoterTrack>
+) {
   return async (transactionEvent: TransactionEvent) =>
     verifyNewVotes(transactionEvent, uniContract, previousVoters);
 }
 
-function provideHandleBlock(uniContract: ethers.Contract) {
+function provideHandleBlock(
+  uniContract: ethers.Contract,
+  previousVoters: Array<VoterTrack>
+) {
   return async (blockEvent: BlockEvent) =>
     trackOldVotes(blockEvent, uniContract, previousVoters);
 }
@@ -27,6 +33,6 @@ function provideHandleBlock(uniContract: ethers.Contract) {
 export default {
   provideHandleTransaction,
   provideHandleBlock,
-  HandleTransaction: provideHandleTransaction(uni),
-  HandleBlock: provideHandleBlock(uni),
+  HandleTransaction: provideHandleTransaction(uni, previousVoters),
+  HandleBlock: provideHandleBlock(uni, previousVoters),
 };

@@ -6,6 +6,8 @@ import {
   Finding,
   FindingType,
   FindingSeverity,
+  createBlockEvent,
+  BlockEvent,
 } from "forta-agent";
 import {
   DECIMALS,
@@ -32,22 +34,28 @@ export class VoterTrack {
 }
 
 export const analyzeBalanceChange = (
-  currentBalance: number,
-  priorBalance: number
+  currentBalance: BigNumber,
+  priorBalance: BigNumber
 ): number => {
-  const balanceChange = currentBalance - priorBalance;
-  if (balanceChange === 0) return 0;
+  const balanceChange = currentBalance.minus(priorBalance);
+  if (balanceChange.eq(0)) return 0;
 
   let suspicius: number = 0;
-  if (balanceChange >= SUSPICIUS_LEVEL_4) suspicius = 4;
-  else if (balanceChange >= SUSPICIUS_LEVEL_3) suspicius = 3;
-  else if (balanceChange >= SUSPICIUS_LEVEL_2) suspicius = 2;
-  else if (balanceChange >= SUSPICIUS_LEVEL_1) suspicius = 1;
+  if (balanceChange.gte(SUSPICIUS_LEVEL_4)) suspicius = 4;
+  else if (balanceChange.gte(SUSPICIUS_LEVEL_3)) suspicius = 3;
+  else if (balanceChange.gte(SUSPICIUS_LEVEL_2)) suspicius = 2;
+  else if (balanceChange.gte(SUSPICIUS_LEVEL_1)) suspicius = 1;
 
-  if (currentBalance <= priorBalance + priorBalance * SUSPICIUS_THRESHOLD_1)
+  if (
+    currentBalance <=
+    priorBalance.plus(priorBalance.multipliedBy(SUSPICIUS_THRESHOLD_1))
+  )
     suspicius--;
 
-  if (currentBalance >= priorBalance + priorBalance * SUSPICIUS_THRESHOLD_2)
+  if (
+    currentBalance >=
+    priorBalance.plus(priorBalance.multipliedBy(SUSPICIUS_THRESHOLD_2))
+  )
     suspicius++;
 
   return suspicius < 0 ? 0 : suspicius;
@@ -57,17 +65,17 @@ export class Alerts {
   public txBalanceIncrease(
     severity: number,
     address: string,
-    curretBalance: number,
-    priorBalance: number
+    curretBalance: BigNumber,
+    priorBalance: BigNumber
   ) {
     console.log("Generating alert!");
     console.log(INC_ALERT_1);
-    console.log(curretBalance - priorBalance);
+    console.log(curretBalance.minus(priorBalance));
     return Finding.fromObject({
       name: "Voter Balance Increase",
-      description: `Voter balance increased by ${
-        (curretBalance - priorBalance) / DECIMALS
-      }`,
+      description: `Voter balance increased by ${curretBalance
+        .minus(priorBalance)
+        .div(DECIMALS)}`,
       alertId: INC_ALERT_1,
       severity: severity,
       type: severity === 1 ? FindingType.Info : FindingType.Suspicious,
@@ -122,6 +130,35 @@ export class TestUtils {
     return lists[0].map((_, c) => lists.map((row) => row[c]));
   }
 
+  private createBckEvent(blockNum: number): BlockEvent {
+    return createBlockEvent({
+      type: {} as any,
+      network: {} as any,
+      block: {
+        uncles: [],
+        transactions: [],
+        stateRoot: "",
+        timestamp: 0,
+        totalDifficulty: "",
+        transactionsRoot: "",
+        sha3Uncles: "",
+        size: "",
+        difficulty: "",
+        extraData: "",
+        gasLimit: "",
+        gasUsed: "",
+        logsBloom: "",
+        hash: "",
+        miner: "",
+        mixHash: "",
+        nonce: "",
+        parentHash: "",
+        receiptsRoot: "",
+        number: blockNum,
+      },
+    });
+  }
+
   private createTxEvent(blockNum: number): TransactionEvent {
     return createTransactionEvent({
       transaction: {} as any,
@@ -166,15 +203,16 @@ export class TestUtils {
   public createVoteTx(
     address: string,
     blockNum: number,
-    mockUni: any,
-    priorVotes: number,
-    currentVotes: number
+    currentVotes: BigNumber
   ) {
-    mockUni.getPriorVotes = () => priorVotes;
     let args: Array<any> & { [key: string]: any } = [];
     args["voter"] = address;
     args["votes"] = currentVotes;
     const mockTx = this.createEventWithLogs(blockNum, [VOTE_CAST_SIG], [args]);
     return mockTx;
+  }
+
+  public createVoteBlock(blockNum: number) {
+    return this.createBckEvent(blockNum);
   }
 }
