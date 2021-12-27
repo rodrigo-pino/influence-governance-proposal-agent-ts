@@ -4,14 +4,14 @@ import {
   HandleTransaction,
   TransactionEvent,
   ethers,
-  getJsonRpcUrl,
+  getEthersProvider,
 } from "forta-agent";
 import { UNI_ABI, UNI_ADDRESS } from "./const";
 import { trackOldVotes } from "./track.old.votes";
 import { verifyNewVotes } from "./verify.new.votes";
 import { VoterTrack } from "./utils";
 
-const provider = new ethers.providers.JsonRpcProvider(getJsonRpcUrl());
+const provider = getEthersProvider();
 const uni = new ethers.Contract(UNI_ADDRESS, UNI_ABI, provider);
 const previousVoters: Array<VoterTrack> = new Array();
 

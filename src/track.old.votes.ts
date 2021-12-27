@@ -55,7 +55,7 @@ export const trackOldVotes = async (
           type: FindingType.Suspicious,
         });
       }
-      // This voter won't be kept track of anymore
+      // Add voter to stop tracking
       deleteIndices.push(i);
       // Add finding
       findings.push(finding);

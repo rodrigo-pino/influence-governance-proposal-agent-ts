@@ -3,10 +3,9 @@ import {
   Finding,
   FindingSeverity,
   FindingType,
-  HandleTransaction,
   TransactionEvent,
 } from "forta-agent";
-import { GOVERNOR_BRAVO_ADDRESS, VOTE_CAST_SIG } from "./const";
+import { DECIMALS, GOVERNOR_BRAVO_ADDRESS, VOTE_CAST_SIG } from "./const";
 import { VoterTrack } from "./utils";
 
 export const verifyNewVotes = async (
@@ -32,20 +31,23 @@ export const verifyNewVotes = async (
 
     const voterVotes = vote.args.votes;
 
-    console.log(`votes: ${voterVotes}`);
-
+    console.log(`votes: ${voterVotes / DECIMALS}`);
     // If vote has a significant balance increase send alert
     // and set it as suspicius for later tracking
-    let suspicius = false;
-    if (voterVotes - priorVotes >= 0) {
-      suspicius = true;
+    const balanceChange = voterVotes - priorVotes;
+    if (balanceChange >= 1 * DECIMALS) {
       findings.push(
         Finding.fromObject({
-          name: "Significant balance Increase",
-          description: "It increased like, a lot",
+          name: "Voter Balance Increase",
+          description: `Voter Balance increased by ${balanceChange / DECIMALS}`,
           alertId: "UNI-INC-1",
           severity: FindingSeverity.Medium,
           type: FindingType.Suspicious,
+          metadata: {
+            voterAddress: voterAddress,
+            currentBalance: voterVotes,
+            priorBalance: priorVotes,
+          },
         })
       );
     }
@@ -56,7 +58,7 @@ export const verifyNewVotes = async (
       address: voterAddress,
       votes: voterVotes,
       blockNum: blockNum,
-      suspicius: suspicius,
+      suspicius: balanceChange > 0,
     });
   }
 
