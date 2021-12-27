@@ -8,7 +8,6 @@ export const verifyNewVotes = async (
   uni: ethers.Contract,
   previousVoters: Array<VoterTrack>
 ) => {
-  console.log("Handling event");
   const findings: Finding[] = [];
 
   // Get all VoteCast events in this transaction
@@ -18,10 +17,7 @@ export const verifyNewVotes = async (
   );
 
   const blockNum = transactionEvent.blockNumber;
-  console.log(`Transaction detected on block: ${blockNum}`);
-  console.log(`Total alerts: ${voteCasts.length}`);
-
-  // For each voter analyze it's uni balance 100 blocks ago
+  // For each voter analyze its balance from 100 blocks ago
   const alerts = new Alerts();
   for (const vote of voteCasts) {
     const voterAddress: string = vote.args.voter;
@@ -32,15 +28,9 @@ export const verifyNewVotes = async (
 
     const currentBalance: BigNumber = vote.args.votes;
 
-    console.log("Detected");
-    console.log(priorBalance, currentBalance);
-    console.log(priorBalance.toString(), currentBalance.toString());
-    console.log(`changeInbalance ${currentBalance.sub(priorBalance)}`);
-
     // If vote has a significant balance increase send alert
     // and set it as suspicius for later tracking
     const severity = analyzeBalanceChange(currentBalance, priorBalance);
-    console.log("severity:", severity);
     if (severity > 0) {
       findings.push(
         alerts.txBalanceIncrease(

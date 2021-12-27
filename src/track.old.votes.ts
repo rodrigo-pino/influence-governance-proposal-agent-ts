@@ -7,7 +7,6 @@ export const trackOldVotes = async (
   uni: ethers.Contract,
   previousVoters: Array<VoterTrack>
 ) => {
-  console.log("Handling block");
   const findings: Finding[] = [];
 
   // Delete all voters which voted 100 or more blocks ago
@@ -23,11 +22,9 @@ export const trackOldVotes = async (
     uni.getPriorVotes(voter.address)
   );
 
-  console.log(previousVoters);
   const alerts = new Alerts();
   const deleteIndices: Array<number> = [];
   for (let i = 0; i < previousVoters.length; i++) {
-    console.log("Analizing", i);
     const voter = previousVoters[i];
     const currentVote: BigNumber = await currentBalance[i];
 
@@ -36,11 +33,6 @@ export const trackOldVotes = async (
       let finding: Finding;
       // Throw a different alert if balance decreased
       // from an already suspicius account
-      const metadata = {
-        voterAddress: voter.address,
-        currentBalance: currentVote.toString(),
-        priorBalance: voter.votes.toString(),
-      };
       if (voter.suspicius > 0) {
         finding = alerts.blockSuspiciusBalanceDecreased(voter, currentVote);
       } else {
