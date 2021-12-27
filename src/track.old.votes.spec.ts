@@ -7,7 +7,6 @@ import {
   VoterTrack,
 } from "./utils";
 import agent from "./agent";
-import { BigNumber } from "ethers";
 
 describe("voters balance status after voting", () => {
   let handleTransaction: HandleTransaction;

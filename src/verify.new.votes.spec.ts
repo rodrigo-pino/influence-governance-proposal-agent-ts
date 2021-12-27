@@ -7,11 +7,9 @@ import {
   VoterTrack,
 } from "./utils";
 import agent from "./agent";
-import { BigNumber } from "ethers";
 
 describe("balance status before voting", () => {
   let handleTransaction: HandleTransaction;
-  let handleBlock: HandleBlock;
   let mockUni: any;
   let previousVoters: Array<VoterTrack>;
 
@@ -22,7 +20,6 @@ describe("balance status before voting", () => {
     mockUni = {};
     previousVoters = [];
     handleTransaction = agent.provideHandleTransaction(mockUni, previousVoters);
-    handleBlock = agent.provideHandleBlock(mockUni, previousVoters);
   });
 
   it("no change in balance", async () => {
