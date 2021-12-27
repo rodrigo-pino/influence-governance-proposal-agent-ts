@@ -1,4 +1,3 @@
-import BigNumber from "bignumber.js";
 import {
   BlockEvent,
   Finding,
@@ -16,26 +15,19 @@ import {
   UNI_ADDRESS,
   VOTE_CAST_SIG,
 } from "./const";
+import { VoterTrack } from "./utils";
 
 const provider = new ethers.providers.JsonRpcProvider(getJsonRpcUrl());
 const uni = new ethers.Contract(UNI_ADDRESS, UNI_ABI, provider);
 
 const previousVoters: Array<VoterTrack> = new Array();
 
-class VoterTrack {
-  address!: string;
-  votes!: BigNumber;
-  blockNum!: number;
-  suspicius: boolean = false;
-}
-
 const handleTransaction: HandleTransaction = async (
   transactionEvent: TransactionEvent
 ) => {
   const findings: Finding[] = [];
 
-  console.log("handling transaction");
-
+  // Get all VoteCast events in this transaction
   const voteCasts = transactionEvent.filterLog(
     VOTE_CAST_SIG,
     GOVERNOR_BRAVO_ADDRESS
@@ -43,6 +35,8 @@ const handleTransaction: HandleTransaction = async (
 
   const blockNum = transactionEvent.blockNumber;
   console.log(`Transaction ocurred in blocknum: ${blockNum}`);
+
+  // For each voter analyze it's uni balance 100 blocks ago
   for (const vote of voteCasts) {
     const voterAddress = vote.args.voter;
     const priorVotes = await uni.getPriorVotes(voterAddress, blockNum - 100);
@@ -51,7 +45,8 @@ const handleTransaction: HandleTransaction = async (
 
     console.log(`votes: ${voterVotes}`);
 
-    //
+    // If vote has a significant balance increase send alert
+    // and set it as suspicius for later tracking
     let suspicius = false;
     if (voterVotes - (await priorVotes) >= 0) {
       suspicius = true;
@@ -66,7 +61,8 @@ const handleTransaction: HandleTransaction = async (
       );
     }
 
-    // Keep track of all voters to check transaction changes
+    // Save all detected votes and keep checking them
+    // for the next 100 blocks
     previousVoters.push({
       address: voterAddress,
       votes: voterVotes,
@@ -122,6 +118,7 @@ const handleBlock: HandleBlock = async (blockEvent: BlockEvent) => {
           type: FindingType.Suspicious,
         });
       }
+      // This voter won't be kept track of anymore
       deleteIndices.push(i);
       // Add finding
       findings.push(finding);
