@@ -1,5 +1,11 @@
 import { HandleTransaction, HandleBlock } from "forta-agent";
-import { Alerts, analyzeBalanceChange, TestUtils, VoterTrack } from "./utils";
+import {
+  Alerts,
+  analyzeBalanceChange,
+  getVotes,
+  TestUtils,
+  VoterTrack,
+} from "./utils";
 import agent from "./agent";
 import { VOTE_CAST_SIG } from "./const";
 import { BigNumber } from "ethers";
@@ -87,5 +93,44 @@ describe("governance influence detection", () => {
       ),
     ]);
   });
-  it("voter uni balance increase after voting and then decreases", () => {});
+  it("voter uni balance decrease long after voting", async () => {
+    mockUni.getPriorVotes = () => BigNumber.from(100);
+    const voteTx = testUtils.createVoteTx("0x1111", 100, BigNumber.from(100));
+    let findings = await handleTransaction(voteTx);
+    expect(findings).toStrictEqual([]);
+
+    mockUni.getPriorVotes = () => BigNumber.from(50);
+    const voteBlock = testUtils.createVoteBlock(201);
+    findings = await handleBlock(voteBlock);
+    expect(findings).toStrictEqual([]);
+  });
+
+  it("voter uni balance increase and then decreases", async () => {
+    const priorVotes = getVotes(50);
+    const currentVotes = getVotes(100);
+    const blockNum = 100;
+    const suspicius = analyzeBalanceChange(currentVotes, priorVotes);
+
+    mockUni.getPriorVotes = () => priorVotes;
+    const voteTx = testUtils.createVoteTx("0x1111", blockNum, currentVotes);
+    let findings = await handleTransaction(voteTx);
+    expect(findings).toStrictEqual([
+      alerts.txBalanceIncrease(suspicius, "0x1111", currentVotes, priorVotes),
+    ]);
+
+    const newVotes = getVotes(50);
+    const blockTx = testUtils.createVoteBlock(blockNum + 99);
+    findings = await handleBlock(blockTx);
+    expect(findings).toStrictEqual([
+      alerts.blockSuspiciusBalanceDecreased(
+        {
+          address: "0x1111",
+          votes: currentVotes,
+          blockNum: blockNum,
+          suspicius: suspicius,
+        },
+        newVotes
+      ),
+    ]);
+  });
 });
