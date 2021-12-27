@@ -3,8 +3,15 @@ import {
   createTransactionEvent,
   TransactionEvent,
   LogDescription,
+  Finding,
+  FindingType,
+  FindingSeverity,
 } from "forta-agent";
 import {
+  DECIMALS,
+  DEC_ALERT_1,
+  DEC_ALERT_2,
+  INC_ALERT_1,
   SUSPICIUS_LEVEL_1,
   SUSPICIUS_LEVEL_2,
   SUSPICIUS_LEVEL_3,
@@ -42,6 +49,64 @@ export const analyzeBalanceChange = (
 
   return suspicius < 0 ? 0 : suspicius;
 };
+
+export class Alerts {
+  public txBalanceIncrease(
+    severity: number,
+    address: string,
+    curretBalance: number,
+    priorBalance: number
+  ) {
+    return Finding.fromObject({
+      name: "Voter Balance Increase",
+      description: `Voter Balance increased by ${
+        (curretBalance - priorBalance) / DECIMALS
+      }`,
+      alertId: INC_ALERT_1,
+      severity: severity,
+      type: severity === 1 ? FindingType.Info : FindingType.Suspicious,
+      metadata: {
+        voterAddress: address,
+        currentBalance: curretBalance.toString(),
+        priorBalance: priorBalance.toString(),
+      },
+    });
+  }
+
+  public blockSuspiciusBalanceDecreased(
+    voter: VoterTrack,
+    currentVote: BigNumber,
+    metadata: { [key: string]: any }
+  ) {
+    return Finding.fromObject({
+      name: "Suspicius Account Balance Decrease",
+      description: `Suspicius account balance decreased ${voter.votes.minus(
+        currentVote
+      )}`,
+      alertId: DEC_ALERT_2,
+      severity: (voter.suspicius + 1) % 5,
+      type: FindingType.Suspicious,
+      metadata: metadata,
+    });
+  }
+
+  public blockBalanceDecreased(
+    voter: VoterTrack,
+    currentVote: BigNumber,
+    metadata: { [key: string]: any }
+  ) {
+    return Finding.fromObject({
+      name: "Account Balance Decrease",
+      description: `Account balance decreased ${voter.votes.minus(
+        currentVote
+      )}`,
+      alertId: DEC_ALERT_1,
+      severity: FindingSeverity.Medium,
+      type: FindingType.Suspicious,
+      metadata: metadata,
+    });
+  }
+}
 
 export class TestUtils {
   private zip(lists: any[][]) {

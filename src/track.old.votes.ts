@@ -1,12 +1,6 @@
 import BigNumber from "bignumber.js";
-import {
-  BlockEvent,
-  ethers,
-  Finding,
-  FindingSeverity,
-  FindingType,
-} from "forta-agent";
-import { VoterTrack } from "./utils";
+import { BlockEvent, ethers, Finding } from "forta-agent";
+import { Alerts, VoterTrack } from "./utils";
 
 export const trackOldVotes = async (
   blockEvent: BlockEvent,
@@ -24,11 +18,12 @@ export const trackOldVotes = async (
     previousVoters.shift();
   }
 
-  // Get the current account balance of every voter
+  // Get the current account balance for every voter
   const currentBalance = previousVoters.map(async (voter) =>
     uni.getPriorVotes(voter.address)
   );
 
+  const alerts = new Alerts();
   const deleteIndices: Array<number> = [];
   for (let i = 0; i < previousVoters.length; i++) {
     const voter = previousVoters[i];
@@ -45,27 +40,13 @@ export const trackOldVotes = async (
         priorBalance: voter.votes.toString(),
       };
       if (voter.suspicius > 0) {
-        finding = Finding.fromObject({
-          name: "Suspicius Account Balance Decrease",
-          description: `Suspicius account balance decreased ${voter.votes.minus(
-            currentVote
-          )}`,
-          alertId: "UNI-DEC-2",
-          severity: (voter.suspicius + 1) % 5,
-          type: FindingType.Suspicious,
-          metadata: metadata,
-        });
+        finding = alerts.blockSuspiciusBalanceDecreased(
+          voter,
+          currentVote,
+          metadata
+        );
       } else {
-        finding = Finding.fromObject({
-          name: "Account balance decrease",
-          description: `Account balance decreased ${voter.votes.minus(
-            currentVote
-          )}`,
-          alertId: "UNI-DEC-1",
-          severity: FindingSeverity.Medium,
-          type: FindingType.Suspicious,
-          metadata: metadata,
-        });
+        finding = alerts.blockBalanceDecreased(voter, currentVote, metadata);
       }
       // Add voter to stop tracking
       deleteIndices.push(i);
