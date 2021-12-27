@@ -1,11 +1,17 @@
 import BigNumber from "bignumber.js";
 import {
+  createTransactionEvent,
+  TransactionEvent,
+  LogDescription,
+} from "forta-agent";
+import {
   SUSPICIUS_LEVEL_1,
   SUSPICIUS_LEVEL_2,
   SUSPICIUS_LEVEL_3,
   SUSPICIUS_LEVEL_4,
   SUSPICIUS_THRESHOLD_1,
   SUSPICIUS_THRESHOLD_2,
+  VOTE_CAST_SIG,
 } from "./const";
 
 export class VoterTrack {
@@ -36,3 +42,67 @@ export const analyzeBalanceChange = (
 
   return suspicius < 0 ? 0 : suspicius;
 };
+
+export class TestUtils {
+  private zip(lists: any[][]) {
+    return lists[0].map((_, c) => lists.map((row) => row[c]));
+  }
+
+  private createTxEvent(blockNum: number): TransactionEvent {
+    return createTransactionEvent({
+      transaction: {} as any,
+      receipt: {} as any,
+      block: {
+        hash: {} as any,
+        timestamp: {} as any,
+        number: blockNum,
+      },
+    });
+  }
+
+  private createLogEvent(
+    signature: string,
+    result: Array<any> & { [key: string]: any }
+  ): LogDescription {
+    return {
+      eventFragment: {} as any,
+      name: {} as any,
+      signature: signature,
+      topic: {} as any,
+      args: result,
+      address: "",
+    };
+  }
+  public createEventWithLogs(
+    blockNum: number,
+    signatures: string[],
+    logs: any[]
+  ) {
+    const txEvent = this.createTxEvent(blockNum);
+
+    const eventDescription: LogDescription[] = [];
+    this.zip([signatures, logs]).forEach((result) =>
+      eventDescription.push(this.createLogEvent(result[0], result[1]))
+    );
+    txEvent.filterLog = () => eventDescription;
+
+    return txEvent;
+  }
+
+  public createVoteTx(
+    blockNum: number,
+    mockUni: any,
+    priorVotes: number,
+    currentVotes: number
+  ) {
+    mockUni.getPriorVotes = () => priorVotes;
+    let args: Array<any> & { [key: string]: any } = [];
+    args["voter"] = 100;
+    const mockTx = this.createEventWithLogs(
+      currentVotes,
+      [VOTE_CAST_SIG],
+      [args]
+    );
+    return mockTx;
+  }
+}
