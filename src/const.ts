@@ -15,5 +15,5 @@ export const SUSPICIUS_LEVEL_2 = 150 * DECIMALS;
 export const SUSPICIUS_LEVEL_3 = 300 * DECIMALS;
 export const SUSPICIUS_LEVEL_4 = 800 * DECIMALS;
 
-export const SUSPICIUS_THRESHOLD_1 = 1;
-export const SUSPICIUS_THRESHOLD_2 = 25;
+export const SUSPICIUS_THRESHOLD_1 = 0.1;
+export const SUSPICIUS_THRESHOLD_2 = 0.25;
