@@ -13,11 +13,11 @@ import {
   DEC_ALERT_1,
   DEC_ALERT_2,
   INC_ALERT_1,
-  SUSPICIUS_LEVEL_1,
-  SUSPICIUS_LEVEL_2,
-  SUSPICIUS_LEVEL_3,
-  SUSPICIUS_LEVEL_4,
-  SUSPICIUS_THRESHOLD,
+  SUSPICIOUS_LEVEL_1,
+  SUSPICIOUS_LEVEL_2,
+  SUSPICIOUS_LEVEL_3,
+  SUSPICIOUS_LEVEL_4,
+  SUSPICIOUS_THRESHOLD,
   VOTE_CAST_SIG,
 } from "./const";
 
@@ -40,12 +40,14 @@ export const analyzeBalanceChange = (
   if (balanceChange.eq(0)) return 0;
 
   let suspicius: number = 0;
-  if (balanceChange.gte(toBase18Votes(SUSPICIUS_LEVEL_4))) suspicius = 4;
-  else if (balanceChange.gte(toBase18Votes(SUSPICIUS_LEVEL_3))) suspicius = 3;
-  else if (balanceChange.gte(toBase18Votes(SUSPICIUS_LEVEL_2))) suspicius = 2;
-  else if (balanceChange.gte(toBase18Votes(SUSPICIUS_LEVEL_1))) suspicius = 1;
+  if (balanceChange.gte(toBase18Votes(SUSPICIOUS_LEVEL_4))) suspicius = 4;
+  else if (balanceChange.gte(toBase18Votes(SUSPICIOUS_LEVEL_3))) suspicius = 3;
+  else if (balanceChange.gte(toBase18Votes(SUSPICIOUS_LEVEL_2))) suspicius = 2;
+  else if (balanceChange.gte(toBase18Votes(SUSPICIOUS_LEVEL_1))) suspicius = 1;
 
-  if (currentBalance >= priorBalance.add(priorBalance.div(SUSPICIUS_THRESHOLD)))
+  if (
+    currentBalance >= priorBalance.add(priorBalance.div(SUSPICIOUS_THRESHOLD))
+  )
     suspicius++;
 
   return suspicius;

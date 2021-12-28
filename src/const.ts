@@ -12,8 +12,8 @@ export const INC_ALERT_1 = "UNI-BALANCE-INC-1";
 export const DEC_ALERT_1 = "UNI-BALANCE-DEC-1";
 export const DEC_ALERT_2 = "UNI-BALANCE-DEC-2";
 
-export const SUSPICIUS_LEVEL_1 = 50;
-export const SUSPICIUS_LEVEL_2 = 150;
-export const SUSPICIUS_LEVEL_3 = 300;
-export const SUSPICIUS_LEVEL_4 = 800;
-export const SUSPICIUS_THRESHOLD = 4;
+export const SUSPICIOUS_LEVEL_1 = 50;
+export const SUSPICIOUS_LEVEL_2 = 150;
+export const SUSPICIOUS_LEVEL_3 = 300;
+export const SUSPICIOUS_LEVEL_4 = 800;
+export const SUSPICIOUS_THRESHOLD = 4;
