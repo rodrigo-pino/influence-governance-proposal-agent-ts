@@ -40,7 +40,6 @@ export const trackOldVotes = async (
       }
       // Voter to be deleted from tracking
       deleteIndices.push(i);
-      // Add finding
       findings.push(finding);
     }
   }
