@@ -1,3 +1,5 @@
 node_modules
 dist
 forta.config.json
+src/track.old.votes.spec.ts
+src/verify.new.votes.spec.ts
