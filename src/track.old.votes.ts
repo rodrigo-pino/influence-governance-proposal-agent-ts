@@ -38,7 +38,7 @@ export const trackOldVotes = async (
       } else {
         finding = alerts.blockBalanceDecreased(voter, currentVote);
       }
-      // Add voter to stop tracking
+      // Voter to be deleted from tracking
       deleteIndices.push(i);
       // Add finding
       findings.push(finding);

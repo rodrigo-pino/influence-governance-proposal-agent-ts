@@ -1,7 +1,5 @@
 import {
   BlockEvent,
-  HandleBlock,
-  HandleTransaction,
   TransactionEvent,
   ethers,
   getEthersProvider,
