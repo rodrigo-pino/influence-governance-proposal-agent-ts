@@ -10,29 +10,20 @@ import {
   BlockEvent,
 } from "forta-agent";
 import {
-  //DECIMALS,
-  //DEC_ALERT_1,
-  //DEC_ALERT_2,
-  //INC_ALERT_1,
-  //SUSPICIUS_LEVEL_1,
-  //SUSPICIUS_LEVEL_2,
-  //SUSPICIUS_LEVEL_3,
-  //SUSPICIUS_LEVEL_4,
+  DEC_ALERT_1,
+  DEC_ALERT_2,
+  INC_ALERT_1,
+  SUSPICIUS_LEVEL_1,
+  SUSPICIUS_LEVEL_2,
+  SUSPICIUS_LEVEL_3,
+  SUSPICIUS_LEVEL_4,
+  SUSPICIUS_THRESHOLD,
   VOTE_CAST_SIG,
 } from "./const";
-
-const INC_ALERT_1 = "UNI-BALANCE-INC-1";
-const DEC_ALERT_1 = "UNI-BALANCE-DEC-1";
-const DEC_ALERT_2 = "UNI-BALANCE-DEC-2";
 
 const DECIMALS = BigNumber.from(10).pow(18);
 export const toBase18Votes = (num: number) => BigNumber.from(num).mul(DECIMALS);
 const fromBase18Votes = (num: BigNumber) => num.div(DECIMALS);
-
-const SUSPICIUS_LEVEL_4 = toBase18Votes(800);
-const SUSPICIUS_LEVEL_3 = toBase18Votes(300);
-const SUSPICIUS_LEVEL_2 = toBase18Votes(150);
-const SUSPICIUS_LEVEL_1 = toBase18Votes(50);
 
 export class VoterTrack {
   address!: string;
@@ -49,12 +40,13 @@ export const analyzeBalanceChange = (
   if (balanceChange.eq(0)) return 0;
 
   let suspicius: number = 0;
-  if (balanceChange.gte(SUSPICIUS_LEVEL_4)) suspicius = 4;
-  else if (balanceChange.gte(SUSPICIUS_LEVEL_3)) suspicius = 3;
-  else if (balanceChange.gte(SUSPICIUS_LEVEL_2)) suspicius = 2;
-  else if (balanceChange.gte(SUSPICIUS_LEVEL_1)) suspicius = 1;
+  if (balanceChange.gte(toBase18Votes(SUSPICIUS_LEVEL_4))) suspicius = 4;
+  else if (balanceChange.gte(toBase18Votes(SUSPICIUS_LEVEL_3))) suspicius = 3;
+  else if (balanceChange.gte(toBase18Votes(SUSPICIUS_LEVEL_2))) suspicius = 2;
+  else if (balanceChange.gte(toBase18Votes(SUSPICIUS_LEVEL_1))) suspicius = 1;
 
-  if (currentBalance >= priorBalance.add(priorBalance.div(4))) suspicius++;
+  if (currentBalance >= priorBalance.add(priorBalance.div(SUSPICIUS_THRESHOLD)))
+    suspicius++;
 
   return suspicius;
 };
