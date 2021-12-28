@@ -8,16 +8,14 @@ export const UNI_ABI = [
   "function getPriorVotes(address, uint) public view returns (uint96)",
 ];
 
-export const INC_ALERT_1 = "UNI-INC-1";
-export const DEC_ALERT_1 = "UNI-DEC-1";
-export const DEC_ALERT_2 = "UNI-DEC-2";
-
 export const DECIMALS = 10 ** 18;
 
-export const SUSPICIUS_LEVEL_1 = 50 * DECIMALS;
-export const SUSPICIUS_LEVEL_2 = 150 * DECIMALS;
-export const SUSPICIUS_LEVEL_3 = 300 * DECIMALS;
-export const SUSPICIUS_LEVEL_4 = 800 * DECIMALS;
+export const SUSPICIUS_LEVEL_1 = 50; //* DECIMALS;
+export const SUSPICIUS_LEVEL_2 = 150; //* DECIMALS;
+export const SUSPICIUS_LEVEL_3 = 300; //* DECIMALS;
+export const SUSPICIUS_LEVEL_4 = 800; //* DECIMALS;
+console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+console.log(SUSPICIUS_LEVEL_4);
 
 export const SUSPICIUS_THRESHOLD_1 = 0.1;
 export const SUSPICIUS_THRESHOLD_2 = 0.25;

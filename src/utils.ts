@@ -10,21 +10,31 @@ import {
   BlockEvent,
 } from "forta-agent";
 import {
-  DECIMALS,
+  //DECIMALS,
   //DEC_ALERT_1,
   //DEC_ALERT_2,
   //INC_ALERT_1,
-  SUSPICIUS_LEVEL_1,
-  SUSPICIUS_LEVEL_2,
-  SUSPICIUS_LEVEL_3,
-  SUSPICIUS_LEVEL_4,
+  //SUSPICIUS_LEVEL_1,
+  //SUSPICIUS_LEVEL_2,
+  //SUSPICIUS_LEVEL_3,
+  //SUSPICIUS_LEVEL_4,
   SUSPICIUS_THRESHOLD_1,
   SUSPICIUS_THRESHOLD_2,
   VOTE_CAST_SIG,
 } from "./const";
-export const INC_ALERT_1 = "UNI-INC-1";
-export const DEC_ALERT_1 = "UNI-DEC-1";
-export const DEC_ALERT_2 = "UNI-DEC-2";
+
+const INC_ALERT_1 = "UNI-INC-1";
+const DEC_ALERT_1 = "UNI-DEC-1";
+const DEC_ALERT_2 = "UNI-DEC-2";
+
+const DECIMALS = BigNumber.from(10).pow(18);
+export const toBase18Votes = (num: number) => BigNumber.from(num).mul(DECIMALS);
+const fromBase18Votes = (num: BigNumber) => num.div(DECIMALS);
+
+const SUSPICIUS_LEVEL_4 = toBase18Votes(800);
+const SUSPICIUS_LEVEL_3 = toBase18Votes(300);
+const SUSPICIUS_LEVEL_2 = toBase18Votes(150);
+const SUSPICIUS_LEVEL_1 = toBase18Votes(50);
 
 export class VoterTrack {
   address!: string;
@@ -46,40 +56,29 @@ export const analyzeBalanceChange = (
   else if (balanceChange.gte(SUSPICIUS_LEVEL_2)) suspicius = 2;
   else if (balanceChange.gte(SUSPICIUS_LEVEL_1)) suspicius = 1;
 
-  if (
-    currentBalance <= priorBalance.add(priorBalance.mul(SUSPICIUS_THRESHOLD_1))
-  )
-    suspicius--;
+  if (currentBalance >= priorBalance.add(priorBalance.div(4))) suspicius++;
 
-  if (
-    currentBalance >= priorBalance.add(priorBalance.mul(SUSPICIUS_THRESHOLD_2))
-  )
-    suspicius++;
-
-  return suspicius < 0 ? 0 : suspicius;
+  return suspicius;
 };
 
 export class Alerts {
   public txBalanceIncrease(
     severity: number,
     address: string,
-    curretBalance: BigNumber,
+    currentBalance: BigNumber,
     priorBalance: BigNumber
   ) {
-    console.log("Generating alert!");
-    console.log(INC_ALERT_1);
-    console.log(curretBalance.sub(priorBalance));
     return Finding.fromObject({
       name: "Voter Balance Increase",
-      description: `Voter balance increased by ${curretBalance
-        .sub(priorBalance)
-        .div(DECIMALS)}`,
+      description: `Voter balance increased by ${fromBase18Votes(
+        currentBalance.sub(priorBalance)
+      )}`,
       alertId: INC_ALERT_1,
       severity: severity,
       type: severity === 1 ? FindingType.Info : FindingType.Suspicious,
       metadata: {
         voterAddress: address,
-        currentBalance: curretBalance.toString(),
+        currentBalance: currentBalance.toString(),
         priorBalance: priorBalance.toString(),
       },
     });
@@ -91,8 +90,8 @@ export class Alerts {
   ) {
     return Finding.fromObject({
       name: "Suspicius Account Balance Decrease",
-      description: `Suspicius account balance decreased ${voter.votes.sub(
-        currentVote
+      description: `Suspicius account balance decreased ${fromBase18Votes(
+        voter.votes.sub(currentVote)
       )}`,
       alertId: DEC_ALERT_2,
       severity: (voter.suspicius + 1) % 5,
@@ -108,7 +107,9 @@ export class Alerts {
   public blockBalanceDecreased(voter: VoterTrack, currentVote: BigNumber) {
     return Finding.fromObject({
       name: "Account Balance Decrease",
-      description: `Account balance decreased ${voter.votes.sub(currentVote)}`,
+      description: `Account balance decreased ${fromBase18Votes(
+        voter.votes.sub(currentVote)
+      )}`,
       alertId: DEC_ALERT_1,
       severity: FindingSeverity.Medium,
       type: FindingType.Suspicious,
