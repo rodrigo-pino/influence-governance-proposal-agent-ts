@@ -4,6 +4,13 @@
 
 This agent detects any attempt to influence Uniswap governance proposals.
 
+## Config
+
+It is possible to change what does the agent recognize as a significant amount by modifying `SUSPICIOUS_LEVEL_i` and `SUSPICIOUS_THRESHOLD` in  *src/const.ts*:
+
+* `SUSPICIOUS_LEVEL_i` determines the severity level fired by **UNI-BALANCE-INC-1** (_default: 50, 150, 300 and 800_)
+* `SUSPICIOUS_THRESHOLD` determines when to increase the severity level by one when current balance surpass older balance by a certain threshold (_default: 4 which means 25%_)
+
 ## Supported Chains
 
 - Ethereum
@@ -40,5 +47,5 @@ This agent detects any attempt to influence Uniswap governance proposals.
     * `currentBalance` suspect updated balance
     * `voteBalance` suspect balance when it casted a vote
 
-## Test Data
+
 
