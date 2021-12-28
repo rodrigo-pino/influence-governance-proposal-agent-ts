@@ -18,14 +18,12 @@ import {
   //SUSPICIUS_LEVEL_2,
   //SUSPICIUS_LEVEL_3,
   //SUSPICIUS_LEVEL_4,
-  SUSPICIUS_THRESHOLD_1,
-  SUSPICIUS_THRESHOLD_2,
   VOTE_CAST_SIG,
 } from "./const";
 
-const INC_ALERT_1 = "UNI-INC-1";
-const DEC_ALERT_1 = "UNI-DEC-1";
-const DEC_ALERT_2 = "UNI-DEC-2";
+const INC_ALERT_1 = "UNI-BALANCE-INC-1";
+const DEC_ALERT_1 = "UNI-BALANCE-DEC-1";
+const DEC_ALERT_2 = "UNI-BALANCE-DEC-2";
 
 const DECIMALS = BigNumber.from(10).pow(18);
 export const toBase18Votes = (num: number) => BigNumber.from(num).mul(DECIMALS);
@@ -99,7 +97,7 @@ export class Alerts {
       metadata: {
         voterAddress: voter.address,
         curretBalance: currentVote.toString(),
-        priorBalance: voter.votes.toString(),
+        voteBalance: voter.votes.toString(),
       },
     });
   }
@@ -116,7 +114,7 @@ export class Alerts {
       metadata: {
         voterAddress: voter.address,
         curretBalance: currentVote.toString(),
-        priorBalance: voter.votes.toString(),
+        voteBalance: voter.votes.toString(),
       },
     });
   }
